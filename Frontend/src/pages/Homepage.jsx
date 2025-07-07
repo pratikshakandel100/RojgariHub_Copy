@@ -3,6 +3,8 @@ import { Search, MapPin, Users, Briefcase, Code, DollarSign, PenTool, BarChart3,
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 
+import homepageImage from '.././assets/homepageimage.png';
+
 const Homepage = () => {
   const [searchLocation, setSearchLocation] = useState('');
   const [searchJob, setSearchJob] = useState('');
@@ -220,30 +222,16 @@ const Homepage = () => {
               </div>
             </div>
             
-            <div className="flex-1 flex justify-center lg:justify-end">
-              <div className="w-64 h-80 sm:w-80 sm:h-96 bg-gradient-to-br from-indigo-400 to-blue-500 rounded-lg flex items-center justify-center">
-                <div className="text-white text-center">
-                  <div className="w-20 h-20 bg-white bg-opacity-20 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <Users className="w-10 h-10" />
-                  </div>
-                  <p className="text-lg font-medium">Find Your Dream Job</p>
-                </div>
+            {/* Image Section */}
+            <div className="flex-1 lg:ml-8">
+              <div className="flex justify-center lg:justify-end">
+                <img 
+                  src={homepageImage} 
+                  alt="Job search illustration" 
+                  className="max-w-full h-auto w-full max-w-md lg:max-w-lg"
+                />
               </div>
             </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Companies Section */}
-      <section className="py-12 sm:py-16">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <p className="text-center text-gray-500 mb-8">Companies we helped grow</p>
-          <div className="flex flex-wrap items-center justify-center gap-6 sm:gap-8 lg:gap-12">
-            {companies.map((company, index) => (
-              <div key={index} className="text-gray-400 font-bold text-lg sm:text-xl">
-                {company.logo}
-              </div>
-            ))}
           </div>
         </div>
       </section>

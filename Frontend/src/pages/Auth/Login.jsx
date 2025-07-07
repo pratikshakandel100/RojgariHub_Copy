@@ -38,10 +38,10 @@ export default function Login() {
             <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center">
               <span className="text-white font-bold text-sm">R</span>
             </div>
-            <span className="ml-2 text-xl font-bold text-gray-800">RojgarHub</span>
+            <span className="ml-2 text-xl font-bold text-gray-800">RojgariHub</span>
           </div>
           <h1 className="text-3xl font-bold text-gray-900 mb-2">Welcome back</h1>
-          <p className="text-gray-600">Sign in to your account to continue</p>
+          <p className="text-gray-600"  >Sign in to your account to continue</p>
         </div>
 
         {/* Login Form */}
@@ -145,7 +145,7 @@ export default function Login() {
 
         {/* Footer */}
         <div className="mt-8 text-center text-sm text-gray-500">
-          <p>© 2025 RojgarHub. All rights reserved.</p>
+          <p>© 2025 RojgariHub. All rights reserved.</p>
         </div>
       </div>
     </div>
@@ -153,3 +153,4 @@ export default function Login() {
     </>
   );
 }
+
