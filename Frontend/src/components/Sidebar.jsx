@@ -23,7 +23,7 @@ const sidebarItems = [
 
 export default function Sidebar({ activeTab, setActiveTab, setSidebarOpen }) {
   const navigate = useNavigate();
-
+ 
   const handleSignOut = () => {
     // You can clear localStorage or auth context here
     localStorage.clear(); // or removeItem('token')

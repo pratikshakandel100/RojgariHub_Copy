@@ -32,7 +32,7 @@ export default function Dashboard() {
                 <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center">
                   <span className="text-white font-bold text-sm">JH</span>
                 </div>
-                <span className="text-xl font-bold text-gray-900 hidden sm:block">JobHub</span>
+                <span className="text-xl font-bold text-gray-900 hidden sm:block">RojgariHub</span>
               </div>
             </div>
           </div>
