@@ -1,5 +1,4 @@
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
 import { Building2 } from 'lucide-react';
 
 const applications = [
@@ -9,12 +8,6 @@ const applications = [
 ];
 
 export default function Applications() {
-  const navigate = useNavigate();
-
-  const handleViewDetails = () => {
-    navigate('/viewdetails'); // or `/viewdetails/${id}` if you want dynamic routing later
-  };
-
   return (
     <div className="bg-white rounded-lg shadow-sm border border-gray-200">
       <div className="p-6 border-b border-gray-200">
@@ -28,7 +21,7 @@ export default function Applications() {
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Position</th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date Applied</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+              {/* Removed Actions header */}
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
@@ -55,14 +48,7 @@ export default function Applications() {
                   </span>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{app.date}</td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                  <button 
-                    onClick={handleViewDetails}
-                    className="text-blue-600 hover:text-blue-900"
-                  >
-                    View Details
-                  </button>
-                </td>
+                {/* Removed the Actions column with button */}
               </tr>
             ))}
           </tbody>
