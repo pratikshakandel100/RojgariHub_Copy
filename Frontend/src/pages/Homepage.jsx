@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
-import { Search, MapPin, Users, Briefcase, Code, DollarSign, PenTool, BarChart3, Monitor, Building2, Target, Mail, Phone, Facebook, Twitter, Instagram, Linkedin, Youtube, Menu, X } from 'lucide-react';
+import { Search, MapPin, Users, Briefcase, Code, DollarSign, PenTool, BarChart3, Monitor, Building2, Target } from 'lucide-react';
+import Navbar from '../components/Navbar';
+import Footer from '../components/Footer';
 
 const Homepage = () => {
   const [searchLocation, setSearchLocation] = useState('');
   const [searchJob, setSearchJob] = useState('');
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const companies = [
     { name: 'Vodafone', logo: 'V' },
@@ -169,61 +170,7 @@ const Homepage = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <header className="bg-white shadow-sm sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16">
-            <div className="flex items-center">
-              <div className="flex-shrink-0 flex items-center">
-                <div className="w-8 h-8 bg-indigo-600 rounded-full flex items-center justify-center">
-                  <span className="text-white font-bold text-sm">R</span>
-                </div>
-                <span className="ml-2 text-xl font-bold text-gray-900">RojgarHub</span>
-              </div>
-              {/* Desktop Navigation */}
-              <nav className="hidden md:ml-10 md:flex space-x-8">
-                <a href="#" className="text-gray-500 hover:text-gray-700">Find Jobs</a>
-                <a href="#" className="text-gray-500 hover:text-gray-700">Browse Companies</a>
-              </nav>
-            </div>
-            
-            {/* Desktop Auth Buttons */}
-            <div className="hidden md:flex items-center space-x-4">
-              <button className="text-gray-500 hover:text-gray-700">Login</button>
-              <button className="bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700">
-                Sign Up
-              </button>
-            </div>
-            
-            {/* Mobile menu button */}
-            <div className="md:hidden">
-              <button
-                onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-                className="text-gray-500 hover:text-gray-700"
-              >
-                {isMobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
-              </button>
-            </div>
-          </div>
-          
-          {/* Mobile menu */}
-          {isMobileMenuOpen && (
-            <div className="md:hidden">
-              <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3 bg-white border-t">
-                <a href="#" className="block px-3 py-2 text-gray-500 hover:text-gray-700">Find Jobs</a>
-                <a href="#" className="block px-3 py-2 text-gray-500 hover:text-gray-700">Browse Companies</a>
-                <div className="border-t pt-2 mt-2">
-                  <button className="block w-full text-left px-3 py-2 text-gray-500 hover:text-gray-700">Login</button>
-                  <button className="block w-full text-left px-3 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 mt-2">
-                    Sign Up
-                  </button>
-                </div>
-              </div>
-            </div>
-          )}
-        </div>
-      </header>
-
+      <Navbar/>
       {/* Hero Section */}
       <section className="bg-gradient-to-r from-indigo-50 to-blue-50 py-12 sm:py-16 lg:py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -435,77 +382,7 @@ const Homepage = () => {
           </div>
         </div>
       </section>
-
-      {/* Footer */}
-      <footer className="bg-gray-900 text-white py-12 sm:py-16">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
-            <div className="sm:col-span-2 lg:col-span-1">
-              <div className="flex items-center mb-4">
-                <div className="w-8 h-8 bg-indigo-600 rounded-full flex items-center justify-center">
-                  <span className="text-white font-bold text-sm">R</span>
-                </div>
-                <span className="ml-2 text-xl font-bold">RojgarHub</span>
-              </div>
-              <p className="text-gray-400 mb-4">
-                Great platform for the job seeker that
-                searching for new career heights and
-                passionate about startups.
-              </p>
-            </div>
-            
-            <div>
-              <h3 className="font-semibold mb-4">About</h3>
-              <ul className="space-y-2 text-gray-400">
-                <li><a href="#" className="hover:text-white">Companies</a></li>
-                <li><a href="#" className="hover:text-white">Pricing</a></li>
-                <li><a href="#" className="hover:text-white">Terms</a></li>
-                <li><a href="#" className="hover:text-white">Advice</a></li>
-                <li><a href="#" className="hover:text-white">Privacy Policy</a></li>
-              </ul>
-            </div>
-            
-            <div>
-              <h3 className="font-semibold mb-4">Resources</h3>
-              <ul className="space-y-2 text-gray-400">
-                <li><a href="#" className="hover:text-white">Help Docs</a></li>
-                <li><a href="#" className="hover:text-white">Guide</a></li>
-                <li><a href="#" className="hover:text-white">Updates</a></li>
-                <li><a href="#" className="hover:text-white">Contact Us</a></li>
-              </ul>
-            </div>
-            
-            <div>
-              <h3 className="font-semibold mb-4">Get job notifications</h3>
-              <p className="text-gray-400 mb-4">
-                The latest job news, articles, sent to
-                your inbox weekly.
-              </p>
-              <div className="flex flex-col sm:flex-row">
-                <input
-                  type="email"
-                  placeholder="Email Address"
-                  className="flex-1 px-4 py-2 rounded-t-lg sm:rounded-l-lg sm:rounded-t-none bg-gray-800 text-white border border-gray-700 focus:outline-none focus:border-indigo-500"
-                />
-                <button className="bg-indigo-600 px-4 py-2 rounded-b-lg sm:rounded-r-lg sm:rounded-b-none hover:bg-indigo-700">
-                  Subscribe
-                </button>
-              </div>
-            </div>
-          </div>
-          
-          <div className="border-t border-gray-800 mt-12 pt-8 flex flex-col sm:flex-row items-center justify-between">
-            <p className="text-gray-400 mb-4 sm:mb-0">2024 © RojgarHub. All rights reserved.</p>
-            <div className="flex space-x-4">
-              <Facebook className="w-5 h-5 text-gray-400 hover:text-white cursor-pointer" />
-              <Instagram className="w-5 h-5 text-gray-400 hover:text-white cursor-pointer" />
-              <Twitter className="w-5 h-5 text-gray-400 hover:text-white cursor-pointer" />
-              <Linkedin className="w-5 h-5 text-gray-400 hover:text-white cursor-pointer" />
-              <Youtube className="w-5 h-5 text-gray-400 hover:text-white cursor-pointer" />
-            </div>
-          </div>
-        </div>
-      </footer>
+      <Footer/>
     </div>
   );
 };
