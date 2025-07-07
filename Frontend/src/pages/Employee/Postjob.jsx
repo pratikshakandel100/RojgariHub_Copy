@@ -4,13 +4,14 @@ import { Plus } from 'lucide-react';
 const PostJob = ({ newJob, setNewJob, handleJobSubmit, setActiveTab }) => {
   const [showBoostModal, setShowBoostModal] = React.useState(false);
   const [boostChecked, setBoostChecked] = React.useState(false);
+  const [companyImage, setCompanyImage] = React.useState(null);
 
   return (
     <div className="space-y-6">
       <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Post New Job</h2>
 
       <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm">
-        <form onSubmit={handleJobSubmit} className="p-6 space-y-6">
+        <form onSubmit={(e) => handleJobSubmit(e, companyImage)} className="p-6 space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
@@ -99,6 +100,41 @@ const PostJob = ({ newJob, setNewJob, handleJobSubmit, setActiveTab }) => {
             />
           </div>
 
+          {/* Company Image Upload */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              Company Image
+            </label>
+            <input
+              type="file"
+              accept="image/*"
+              onChange={(e) => {
+                const file = e.target.files[0];
+                if (file) {
+                  setCompanyImage(file);
+                }
+              }}
+              className="block w-full text-sm text-gray-700 dark:text-gray-300
+                file:mr-4 file:py-2 file:px-4
+                file:rounded-md file:border-0
+                file:text-sm file:font-semibold
+                file:bg-blue-50 file:text-blue-700
+                hover:file:bg-blue-100
+                dark:file:bg-gray-700 dark:file:text-gray-300 dark:hover:file:bg-gray-600
+              "
+            />
+            {companyImage && (
+              <div className="mt-4">
+                <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">Preview:</p>
+                <img
+                  src={URL.createObjectURL(companyImage)}
+                  alt="Company preview"
+                  className="h-32 w-auto rounded border border-gray-300 dark:border-gray-600 object-cover"
+                />
+              </div>
+            )}
+          </div>
+
           {/* Boost Job Checkbox */}
           <div className="flex items-center space-x-3">
             <input
@@ -173,7 +209,7 @@ const PostJob = ({ newJob, setNewJob, handleJobSubmit, setActiveTab }) => {
               </button>
               <button
                 onClick={() => {
-                  // Replace this with your payment logic
+                  // Replace with payment logic
                   alert('Redirecting to payment...');
                   setShowBoostModal(false);
                 }}
