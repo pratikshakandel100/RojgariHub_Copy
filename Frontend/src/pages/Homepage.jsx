@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Search, MapPin, Users, Briefcase, Code, DollarSign, PenTool, BarChart3, Monitor, Building2, Target, Mail, Phone, Facebook, Twitter, Instagram, Linkedin, Youtube, Menu, X } from 'lucide-react';
 
-const RojgarHubHomepage = () => {
+const Homepage = () => {
   const [searchLocation, setSearchLocation] = useState('');
   const [searchJob, setSearchJob] = useState('');
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -510,4 +510,4 @@ const RojgarHubHomepage = () => {
   );
 };
 
-export default RojgarHubHomepage;
+export default Homepage;
