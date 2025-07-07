@@ -372,7 +372,7 @@ const Homepage = () => {
       </section>
       <Footer/>
     </div>
-  );
+  );  
 };
 
 export default Homepage;
