@@ -1,4 +1,5 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Building2 } from 'lucide-react';
 
 const applications = [
@@ -8,6 +9,12 @@ const applications = [
 ];
 
 export default function Applications() {
+  const navigate = useNavigate();
+
+  const handleViewDetails = () => {
+    navigate('/viewdetails'); // or `/viewdetails/${id}` if you want dynamic routing later
+  };
+
   return (
     <div className="bg-white rounded-lg shadow-sm border border-gray-200">
       <div className="p-6 border-b border-gray-200">
@@ -49,7 +56,12 @@ export default function Applications() {
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{app.date}</td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                  <button className="text-blue-600 hover:text-blue-900">View Details</button>
+                  <button 
+                    onClick={handleViewDetails}
+                    className="text-blue-600 hover:text-blue-900"
+                  >
+                    View Details
+                  </button>
                 </td>
               </tr>
             ))}
