@@ -174,8 +174,8 @@ const Homepage = () => {
     <div className="min-h-screen bg-gray-50">
       <Navbar/>
       {/* Hero Section */}
-      <section className="bg-gradient-to-r from-indigo-50 to-blue-50 py-12 sm:py-16 lg:py-20">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <section className="bg-gradient-to-r from-indigo-50 to-blue-50 py-12 sm:py-16 lg:py-12">
+        <div className="max-w-8xl mx-auto px-2 sm:px-4 lg:px-6">
           <div className="flex flex-col lg:flex-row items-center justify-between">
             <div className="flex-1 max-w-lg mb-8 lg:mb-0">
               <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-gray-900 mb-4">
@@ -238,7 +238,7 @@ const Homepage = () => {
 
       {/* Explore by Category */}
       <section className="py-12 sm:py-16">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="max-w-8xl mx-auto px-2 sm:px-4 lg:px-6">
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-8">
             <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-4 sm:mb-0">
               Explore by <span className="text-indigo-600">category</span>
@@ -248,7 +248,7 @@ const Homepage = () => {
             </button>
           </div>
           
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
             {categories.map((category, index) => {
               const IconComponent = category.icon;
               return (
@@ -272,7 +272,7 @@ const Homepage = () => {
 
       {/* Start Posting Jobs */}
       <section className="py-12 sm:py-16">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="max-w-8xl mx-auto px-2 sm:px-4 lg:px-6">
           <div className="bg-indigo-600 rounded-xl sm:rounded-2xl p-6 sm:p-8 flex flex-col lg:flex-row items-center">
             <div className="flex-1 text-white mb-6 lg:mb-0">
               <h2 className="text-2xl sm:text-3xl font-bold mb-4">
@@ -300,7 +300,7 @@ const Homepage = () => {
 
       {/* Featured Jobs */}
       <section className="py-12 sm:py-16">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="max-w-8xl mx-auto px-2 sm:px-4 lg:px-6">
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-8">
             <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-4 sm:mb-0">
               Featured <span className="text-indigo-600">jobs</span>
@@ -310,7 +310,7 @@ const Homepage = () => {
             </button>
           </div>
           
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4">
             {featuredJobs.map((job, index) => (
               <div key={index} className="bg-white rounded-lg p-4 sm:p-6 shadow-sm border border-gray-200 hover:shadow-md transition-shadow">
                 <div className="flex items-center mb-4">
@@ -337,7 +337,7 @@ const Homepage = () => {
 
       {/* Latest Jobs */}
       <section className="py-12 sm:py-16">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="max-w-8xl mx-auto px-2 sm:px-4 lg:px-6">
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-8">
             <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-4 sm:mb-0">
               Latest <span className="text-indigo-600">jobs open</span>
@@ -347,7 +347,7 @@ const Homepage = () => {
             </button>
           </div>
           
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-4">
             {latestJobs.map((job, index) => (
               <div key={index} className="bg-white rounded-lg p-4 sm:p-6 shadow-sm border border-gray-200 hover:shadow-md transition-shadow">
                 <div className="flex items-center">
