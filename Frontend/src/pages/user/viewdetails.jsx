@@ -1,7 +1,13 @@
 import React, { useState } from 'react';
+import { User, Loader2 } from 'lucide-react';
+import { applicationsAPI } from '../../utils/api';
+import { toast } from 'react-hot-toast';
+import { useNavigate } from 'react-router-dom';
 
 export default function ViewDetails() {
+  const navigate = useNavigate();
   const job = {
+    id: 'sample-job-id', // This would normally come from props or URL params
     company: 'TESTA',
     title: 'Web & Gameplay Testing – iPhone + Windows Desktop (Kathmandu)',
     location: 'Nepal',
@@ -14,6 +20,8 @@ export default function ViewDetails() {
   // Comments state
   const [comments, setComments] = useState([]);
   const [commentText, setCommentText] = useState('');
+  const [applyingJob, setApplyingJob] = useState(false);
+  const [showResumeModal, setShowResumeModal] = useState(false);
 
   // Handle comment submit
   function handleAddComment() {
@@ -21,6 +29,22 @@ export default function ViewDetails() {
     setComments([...comments, commentText.trim()]);
     setCommentText('');
   }
+
+  const handleApply = async () => {
+    try {
+      setApplyingJob(true);
+      await applicationsAPI.apply(job.id);
+      toast.success('Application submitted successfully!');
+    } catch (error) {
+      console.error('Error applying to job:', error);
+      const errorData = error.response?.data;
+      
+      const errorMessage = errorData?.message || error.message || 'Failed to apply to job';
+      toast.error(errorMessage);
+    } finally {
+      setApplyingJob(false);
+    }
+  };
 
   return (
     <div className="max-w-3xl mx-auto p-6 space-y-6">
@@ -52,7 +76,14 @@ export default function ViewDetails() {
         </div>
 
         <div className="flex gap-3 mt-6">
-          <button className="bg-blue-600 hover:bg-blue-700 text-white font-medium px-5 py-2 rounded-md transition">
+          <button 
+            onClick={handleApply}
+            disabled={applyingJob}
+            className="bg-blue-600 hover:bg-blue-700 text-white font-medium px-5 py-2 rounded-md transition flex items-center disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {applyingJob ? (
+              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+            ) : null}
             Apply
           </button>
           <button className="border border-blue-600 text-blue-600 font-medium px-5 py-2 rounded-md hover:bg-blue-50 transition">
@@ -102,6 +133,43 @@ export default function ViewDetails() {
           )}
         </div>
       </div>
+
+      {/* Resume Upload Modal */}
+      {showResumeModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
+            <div className="text-center">
+              <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-yellow-100 mb-4">
+                <User className="h-6 w-6 text-yellow-600" />
+              </div>
+              <h3 className="text-lg font-medium text-gray-900 mb-2">
+                Resume Required
+              </h3>
+              <p className="text-sm text-gray-500 mb-6">
+                Please upload your resume first on your profile before applying for jobs.
+              </p>
+              <div className="flex space-x-3">
+                <button
+                  onClick={() => setShowResumeModal(false)}
+                  className="flex-1 px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={() => {
+                    setShowResumeModal(false);
+                    navigate('/profile');
+                  }}
+                  className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center justify-center"
+                >
+                  <User className="h-4 w-4 mr-2" />
+                  Go to Profile
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

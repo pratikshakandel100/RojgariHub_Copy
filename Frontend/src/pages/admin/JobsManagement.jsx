@@ -1,146 +1,72 @@
-import React, { useState } from "react";
-import { Filter, Download, Plus, Eye, Edit, Trash2, X, MapPin, Clock, DollarSign, Users, Save, AlertCircle } from "lucide-react";
+import React, { useState, useEffect } from "react";
+import { Filter, Download, Plus, Eye, Edit, Trash2, X, MapPin, Clock, DollarSign, Users, Save, AlertCircle, Search, Calendar, Building, Mail, Phone, Globe, Briefcase, Loader2 } from "lucide-react";
+import { adminAPI } from '../../utils/api';
 
 const JobsManagement = () => {
-  const [jobs, setJobs] = useState([
-    {
-      id: 1,
-      title: "Senior React Developer",
-      company: "TechCorp",
-      location: "San Francisco, US",
-      type: "Full Time",
-      applications: 45,
-      posted: "2 hours ago",
-      salary: "$120k - $150k",
-      description: "We are looking for a Senior React Developer to join our dynamic team. The ideal candidate should have extensive experience in building scalable web applications using React and modern JavaScript frameworks.",
-      requirements: [
-        "5+ years of experience with React.js",
-        "Strong proficiency in JavaScript, HTML5, and CSS3",
-        "Experience with Redux or other state management libraries",
-        "Familiarity with RESTful APIs and GraphQL",
-        "Knowledge of modern build tools (Webpack, Babel)",
-        "Experience with version control systems (Git)",
-        "Strong problem-solving and communication skills"
-      ],
-      benefits: [
-        "Competitive salary and equity package",
-        "Comprehensive health, dental, and vision insurance",
-        "401(k) with company matching",
-        "Flexible working hours and remote work options",
-        "Professional development budget",
-        "Unlimited PTO policy",
-        "Modern office with free meals and snacks"
-      ],
-      contactEmail: "hr@techcorp.com",
-      contactPhone: "+1 (555) 123-4567",
-      companySize: "500-1000 employees",
-      industry: "Technology",
-      experienceLevel: "Senior Level",
-      status: "Active"
-    },
-    {
-      id: 2,
-      title: "UX Designer",
-      company: "DesignHub",
-      location: "London, UK",
-      type: "Remote",
-      applications: 32,
-      posted: "5 hours ago",
-      salary: "$80k - $100k",
-      description: "Seeking a creative UX Designer to enhance user experiences across our digital platforms. You'll work closely with product managers and developers to create intuitive and engaging user interfaces.",
-      requirements: [
-        "3+ years of UX/UI design experience",
-        "Proficiency in design tools (Figma, Sketch, Adobe Creative Suite)",
-        "Strong understanding of user-centered design principles",
-        "Experience with user research and usability testing",
-        "Knowledge of responsive and mobile design",
-        "Portfolio demonstrating design process and outcomes"
-      ],
-      benefits: [
-        "Competitive salary",
-        "Health insurance coverage",
-        "Flexible working arrangements",
-        "Professional development opportunities",
-        "Creative workspace and tools",
-        "Annual design conference budget"
-      ],
-      contactEmail: "jobs@designhub.com",
-      contactPhone: "+44 20 7946 0958",
-      companySize: "50-100 employees",
-      industry: "Design & Creative",
-      experienceLevel: "Mid Level",
-      status: "Active"
-    },
-    {
-      id: 3,
-      title: "Product Manager",
-      company: "StartupXYZ",
-      location: "Berlin, Germany",
-      type: "Full Time",
-      applications: 28,
-      posted: "1 day ago",
-      salary: "$90k - $120k",
-      description: "Lead product development and strategy for our innovative fintech startup. Drive product vision, roadmap planning, and cross-functional collaboration to deliver exceptional user experiences.",
-      requirements: [
-        "4+ years of product management experience",
-        "Strong analytical and strategic thinking skills",
-        "Experience with Agile/Scrum methodologies",
-        "Knowledge of fintech or financial services",
-        "Excellent communication and leadership abilities",
-        "Data-driven decision making approach"
-      ],
-      benefits: [
-        "Equity participation in growing startup",
-        "Flexible schedule and remote work options",
-        "Health and wellness benefits",
-        "Learning and development budget",
-        "Startup environment with growth opportunities",
-        "Team building events and company retreats"
-      ],
-      contactEmail: "hiring@startupxyz.com",
-      contactPhone: "+49 30 1234 5678",
-      companySize: "10-50 employees",
-      industry: "Fintech",
-      experienceLevel: "Senior Level",
-      status: "Active"
-    },
-    {
-      id: 4,
-      title: "Data Scientist",
-      company: "DataFlow",
-      location: "Toronto, Canada",
-      type: "Full Time",
-      applications: 67,
-      posted: "2 days ago",
-      salary: "$110k - $140k",
-      description: "Analyze large datasets to drive business decisions and create predictive models. Work with cutting-edge machine learning technologies to solve complex business problems.",
-      requirements: [
-        "Master's degree in Data Science, Statistics, or related field",
-        "Strong programming skills in Python and R",
-        "Experience with machine learning frameworks (TensorFlow, PyTorch)",
-        "Knowledge of SQL and database management",
-        "Experience with data visualization tools",
-        "Strong statistical analysis and modeling skills"
-      ],
-      benefits: [
-        "Competitive salary and performance bonuses",
-        "Comprehensive health benefits",
-        "Gym membership and wellness programs",
-        "Flexible work arrangements",
-        "Conference and training opportunities",
-        "State-of-the-art technology and tools"
-      ],
-      contactEmail: "recruit@dataflow.com",
-      contactPhone: "+1 (416) 555-1234",
-      companySize: "100-500 employees",
-      industry: "Data & Analytics",
-      experienceLevel: "Mid to Senior Level",
-      status: "Active"
-    }
-  ]);
-
+  const [jobs, setJobs] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [filterStatus, setFilterStatus] = useState('all');
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalJobs, setTotalJobs] = useState(0);
+  const [limit] = useState(10);
   const [selectedJob, setSelectedJob] = useState(null);
+  const [isViewModalOpen, setIsViewModalOpen] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [editingJob, setEditingJob] = useState(null);
+
+  // Fetch jobs from API
+  const fetchJobs = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      
+      const params = {
+        page: currentPage,
+        limit,
+        ...(searchTerm && { search: searchTerm }),
+        ...(filterStatus !== 'all' && { status: filterStatus })
+      };
+      
+      const response = await adminAPI.getJobs(params);
+      
+      if (response.success) {
+        setJobs(response.jobs);
+        setTotalJobs(response.totalJobs);
+        setTotalPages(response.totalPages);
+      }
+    } catch (err) {
+      setError(err.message);
+      console.error('Error fetching jobs:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Handle job deletion
+  const handleDeleteJob = async (jobId) => {
+    if (window.confirm('Are you sure you want to delete this job? This action cannot be undone.')) {
+      try {
+        const response = await adminAPI.deleteJob(jobId);
+        if (response.success) {
+          await fetchJobs(); // Refresh the jobs list
+        }
+      } catch (err) {
+        setError(err.message);
+        console.error('Error deleting job:', err);
+      }
+    }
+  };
+
+  // Get filtered jobs (filtering is now handled by the API)
+  const filteredJobs = jobs;
+
+  // Fetch jobs when component mounts or dependencies change
+  useEffect(() => {
+    fetchJobs();
+  }, [currentPage, searchTerm, filterStatus]);
   const [editFormData, setEditFormData] = useState({});
   const [newRequirement, setNewRequirement] = useState("");
   const [newBenefit, setNewBenefit] = useState("");
@@ -150,10 +76,6 @@ const JobsManagement = () => {
   const industries = ["Technology", "Design & Creative", "Fintech", "Data & Analytics", "Healthcare", "Education", "Marketing"];
   const companySizes = ["1-10 employees", "10-50 employees", "50-100 employees", "100-500 employees", "500-1000 employees", "1000+ employees"];
 
-  const handleDeleteJob = (jobId) => {
-    setJobs(jobs.filter((job) => job.id !== jobId));
-  };
-
   const handleViewJob = (job) => {
     setSelectedJob(job);
   };
@@ -162,8 +84,8 @@ const JobsManagement = () => {
     setEditingJob(job);
     setEditFormData({
       ...job,
-      requirements: [...job.requirements],
-      benefits: [...job.benefits]
+      requirements: Array.isArray(job.requirements) ? [...job.requirements] : [],
+      benefits: Array.isArray(job.benefits) ? [...job.benefits] : []
     });
   };
 
@@ -186,7 +108,7 @@ const JobsManagement = () => {
     if (newRequirement.trim()) {
       setEditFormData(prev => ({
         ...prev,
-        requirements: [...prev.requirements, newRequirement.trim()]
+        requirements: [...(prev.requirements || []), newRequirement.trim()]
       }));
       setNewRequirement("");
     }
@@ -195,7 +117,7 @@ const JobsManagement = () => {
   const removeRequirement = (index) => {
     setEditFormData(prev => ({
       ...prev,
-      requirements: prev.requirements.filter((_, i) => i !== index)
+      requirements: (prev.requirements || []).filter((_, i) => i !== index)
     }));
   };
 
@@ -203,7 +125,7 @@ const JobsManagement = () => {
     if (newBenefit.trim()) {
       setEditFormData(prev => ({
         ...prev,
-        benefits: [...prev.benefits, newBenefit.trim()]
+        benefits: [...(prev.benefits || []), newBenefit.trim()]
       }));
       setNewBenefit("");
     }
@@ -212,88 +134,209 @@ const JobsManagement = () => {
   const removeBenefit = (index) => {
     setEditFormData(prev => ({
       ...prev,
-      benefits: prev.benefits.filter((_, i) => i !== index)
+      benefits: (prev.benefits || []).filter((_, i) => i !== index)
     }));
   };
 
-  const handleSaveChanges = () => {
-    setJobs(jobs.map(job => 
-      job.id === editingJob.id ? { ...editFormData } : job
-    ));
-    closeModal();
+  const handleSaveChanges = async () => {
+    try {
+      setLoading(true);
+      await adminAPI.updateJob(editingJob.id, editFormData);
+      
+      // Update local state with the new data
+      setJobs(jobs.map(job => 
+        job.id === editingJob.id ? { ...job, ...editFormData } : job
+      ));
+      
+      closeModal();
+      // Optionally show success message
+      console.log('Job updated successfully');
+    } catch (error) {
+      console.error('Error updating job:', error);
+      setError('Failed to update job. Please try again.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
-    <div className="space-y-6">
-      {/* Jobs Management Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-2xl font-bold text-gray-900">Jobs Management</h2>
-          <p className="text-gray-600">Manage all job postings and applications</p>
-        </div>
-        <div className="flex space-x-3">
-         
-        </div>
-      </div>
+    <div className="max-w-7xl mx-auto p-6">
+            <div className="mb-6">
+              <h1 className="text-3xl font-bold text-gray-900 mb-2">Jobs Management</h1>
+              <p className="text-gray-600">Manage and monitor all job postings ({totalJobs} total jobs)</p>
+            </div>
 
-      {/* Jobs Table */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200">
-        <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead className="bg-gray-50 border-b border-gray-200">
-              <tr>
-                <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider">Job Title</th>
-                <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider">Company</th>
-                <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider">Location</th>
-                <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
-                <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider">Applications</th>
-                <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-200">
-              {jobs.map((job) => (
-                <tr key={job.id} className="hover:bg-gray-50">
-                  <td className="px-6 py-4">
-                    <div>
-                      <div className="font-medium text-gray-900">{job.title}</div>
-                      <div className="text-sm text-gray-500">{job.salary}</div>
+            {/* Error Message */}
+            {error && (
+              <div className="mb-6 bg-red-50 border border-red-200 rounded-lg p-4 flex items-center">
+                <AlertCircle className="h-5 w-5 text-red-500 mr-3" />
+                <span className="text-red-700">{error}</span>
+              </div>
+            )}
+
+            {/* Search and Filter Controls */}
+            <div className="mb-6 bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+              <div className="flex flex-col sm:flex-row gap-4">
+                <div className="flex-1">
+                  <div className="relative">
+                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+                    <input
+                      type="text"
+                      placeholder="Search jobs by title, company, or location..."
+                      value={searchTerm}
+                      onChange={(e) => setSearchTerm(e.target.value)}
+                      className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                    />
+                  </div>
+                </div>
+                <div className="flex gap-3">
+                  <select
+                    value={filterStatus}
+                    onChange={(e) => setFilterStatus(e.target.value)}
+                    className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                  >
+                    <option value="all">All Status</option>
+                    <option value="active">Active</option>
+                    <option value="inactive">Inactive</option>
+                    <option value="draft">Draft</option>
+                  </select>
+                  <button className="flex items-center px-4 py-2 text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50">
+                    <Filter className="h-4 w-4 mr-2" />
+                    Filter
+                  </button>
+                  <button className="flex items-center px-4 py-2 text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50">
+                    <Download className="h-4 w-4 mr-2" />
+                    Export
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <div className="space-y-6">
+              {/* Jobs Management Header */}
+              <div className="flex items-center justify-between">
+                <div>
+                  <h2 className="text-2xl font-bold text-gray-900">Jobs Management</h2>
+                  <p className="text-gray-600">Manage all job postings and applications</p>
+                </div>
+                <div className="flex space-x-3">
+                 
+                </div>
+              </div>
+
+              {/* Loading State */}
+              {loading && (
+                <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-8">
+                  <div className="flex items-center justify-center">
+                    <Loader2 className="h-8 w-8 animate-spin text-indigo-600 mr-3" />
+                    <span className="text-gray-600">Loading jobs...</span>
+                  </div>
+                </div>
+              )}
+
+              {/* Jobs Table */}
+              {!loading && (
+                <div className="bg-white rounded-lg shadow-sm border border-gray-200">
+                  <div className="overflow-x-auto">
+                    <table className="w-full">
+                      <thead className="bg-gray-50 border-b border-gray-200">
+                        <tr>
+                          <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider">Job Title</th>
+                          <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider">Company</th>
+                          <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider">Location</th>
+                          <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
+                          <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider">Applications</th>
+                          <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-gray-200">
+                        {jobs.length === 0 ? (
+                          <tr>
+                            <td colSpan="6" className="px-6 py-12 text-center">
+                              <div className="text-gray-500">
+                                <Briefcase className="h-12 w-12 mx-auto mb-4 text-gray-300" />
+                                <p className="text-lg font-medium mb-2">No jobs found</p>
+                                <p className="text-sm">Try adjusting your search or filter criteria</p>
+                              </div>
+                            </td>
+                          </tr>
+                        ) : (
+                          jobs.map((job) => (
+                            <tr key={job.id} className="hover:bg-gray-50">
+                              <td className="px-6 py-4">
+                                 <div>
+                                   <div className="font-medium text-gray-900">{job.title}</div>
+                                   <div className="text-sm text-gray-500">{job.salary || 'Salary not specified'}</div>
+                                 </div>
+                               </td>
+                               <td className="px-6 py-4 text-sm text-gray-900">{job.employee?.companyName || 'N/A'}</td>
+                               <td className="px-6 py-4 text-sm text-gray-900">{job.location}</td>
+                               <td className="px-6 py-4 text-sm text-gray-900">{job.employmentType || job.type}</td>
+                               <td className="px-6 py-4 text-sm text-gray-900">{job.applicationsCount || 0}</td>
+                              <td className="px-6 py-4">
+                                <div className="flex space-x-2">
+                                  <button
+                                    onClick={() => handleViewJob(job)}
+                                    className="p-1 text-gray-400 hover:text-gray-600"
+                                    title="View Details"
+                                  >
+                                    <Eye className="w-4 h-4" />
+                                  </button>
+                                  <button
+                                    onClick={() => handleEditJob(job)}
+                                    className="p-1 text-gray-400 hover:text-gray-600"
+                                    title="Edit Job"
+                                  >
+                                    <Edit className="w-4 h-4" />
+                                  </button>
+                                  <button
+                                    onClick={() => handleDeleteJob(job.id)}
+                                    className="p-1 text-gray-400 hover:text-red-600"
+                                    title="Delete Job"
+                                  >
+                                    <Trash2 className="w-4 h-4" />
+                                  </button>
+                                </div>
+                              </td>
+                            </tr>
+                          ))
+                        )}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              )}
+
+              {/* Pagination */}
+              {!loading && totalPages > 1 && (
+                <div className="bg-white rounded-lg shadow-sm border border-gray-200 px-6 py-4">
+                  <div className="flex items-center justify-between">
+                    <div className="text-sm text-gray-700">
+                      Showing {((currentPage - 1) * limit) + 1} to {Math.min(currentPage * limit, totalJobs)} of {totalJobs} jobs
                     </div>
-                  </td>
-                  <td className="px-6 py-4 text-sm text-gray-900">{job.company}</td>
-                  <td className="px-6 py-4 text-sm text-gray-900">{job.location}</td>
-                  <td className="px-6 py-4 text-sm text-gray-900">{job.type}</td>
-                  <td className="px-6 py-4 text-sm text-gray-900">{job.applications}</td>
-                  <td className="px-6 py-4">
                     <div className="flex space-x-2">
                       <button
-                        onClick={() => handleViewJob(job)}
-                        className="p-1 text-gray-400 hover:text-gray-600"
-                        title="View Details"
+                        onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                        disabled={currentPage === 1}
+                        className="px-3 py-1 border border-gray-300 rounded text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50"
                       >
-                        <Eye className="w-4 h-4" />
+                        Previous
                       </button>
+                      <span className="px-3 py-1 text-sm text-gray-700">
+                        Page {currentPage} of {totalPages}
+                      </span>
                       <button
-                        onClick={() => handleEditJob(job)}
-                        className="p-1 text-gray-400 hover:text-gray-600"
-                        title="Edit Job"
+                        onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                        disabled={currentPage === totalPages}
+                        className="px-3 py-1 border border-gray-300 rounded text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50"
                       >
-                        <Edit className="w-4 h-4" />
-                      </button>
-                      <button
-                        onClick={() => handleDeleteJob(job.id)}
-                        className="p-1 text-gray-400 hover:text-red-600"
-                        title="Delete Job"
-                      >
-                        <Trash2 className="w-4 h-4" />
+                        Next
                       </button>
                     </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </div>
+                  </div>
+                </div>
+              )}
+            </div>
 
       {/* Job Details Modal (View) */}
       {selectedJob && (
@@ -680,9 +723,9 @@ const JobsManagement = () => {
                 Save Changes
               </button>
             </div>
-          </div>
-        </div>
-      )}
+              </div>
+            </div>
+          )}
     </div>
   );
 };

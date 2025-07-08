@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Search, MapPin, Users, Briefcase, Code, DollarSign, PenTool, BarChart3, Monitor, Building2, Target, Mail, Phone, Facebook, Twitter, Instagram, Linkedin, Youtube, Menu, X } from 'lucide-react';
 
 const RojgarHubHomepage = () => {
+  const navigate = useNavigate();
   const [searchLocation, setSearchLocation] = useState('');
   const [searchJob, setSearchJob] = useState('');
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -189,8 +191,40 @@ const RojgarHubHomepage = () => {
             
             {/* Desktop Auth Buttons */}
             <div className="hidden md:flex items-center space-x-4">
-              <button className="text-gray-500 hover:text-gray-700">Login</button>
-              <button className="bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700">
+              <div className="relative group">
+                <button className="text-gray-500 hover:text-gray-700 flex items-center">
+                  Login
+                  <svg className="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  </svg>
+                </button>
+                <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
+                  <div className="py-1">
+                    <button 
+                      onClick={() => navigate('/login')}
+                      className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                    >
+                      Job Seeker Login
+                    </button>
+                    <button 
+                      onClick={() => navigate('/employee/login')}
+                      className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                    >
+                      Employee Login
+                    </button>
+                    <button 
+                      onClick={() => navigate('/admin/login')}
+                      className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                    >
+                      Admin Login
+                    </button>
+                  </div>
+                </div>
+              </div>
+              <button 
+                onClick={() => navigate('/register')}
+                className="bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700"
+              >
                 Sign Up
               </button>
             </div>
@@ -213,10 +247,33 @@ const RojgarHubHomepage = () => {
                 <a href="#" className="block px-3 py-2 text-gray-500 hover:text-gray-700">Find Jobs</a>
                 <a href="#" className="block px-3 py-2 text-gray-500 hover:text-gray-700">Browse Companies</a>
                 <div className="border-t pt-2 mt-2">
-                  <button className="block w-full text-left px-3 py-2 text-gray-500 hover:text-gray-700">Login</button>
-                  <button className="block w-full text-left px-3 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 mt-2">
-                    Sign Up
-                  </button>
+                  <div className="space-y-2">
+                    <p className="px-3 py-1 text-sm font-medium text-gray-900">Login Options</p>
+                    <button 
+                      onClick={() => navigate('/login')}
+                      className="block w-full text-left px-3 py-2 text-gray-500 hover:text-gray-700"
+                    >
+                      Job Seeker Login
+                    </button>
+                    <button 
+                      onClick={() => navigate('/employee/login')}
+                      className="block w-full text-left px-3 py-2 text-gray-500 hover:text-gray-700"
+                    >
+                      Employee Login
+                    </button>
+                    <button 
+                      onClick={() => navigate('/admin/login')}
+                      className="block w-full text-left px-3 py-2 text-gray-500 hover:text-gray-700"
+                    >
+                      Admin Login
+                    </button>
+                    <button 
+                      onClick={() => navigate('/register')}
+                      className="block w-full text-left px-3 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 mt-2"
+                    >
+                      Sign Up
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>

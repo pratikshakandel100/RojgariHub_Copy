@@ -1,4 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback } from "react";
+import { Button } from "../../components/ui/button";
+import { Card, CardContent } from "../../components/ui/card";
+import { Badge } from "../../components/ui/badge";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "../../components/ui/dialog";
+import { boostAPI, adminAPI, boostPlanAPI } from '../../utils/api';
+import toast from 'react-hot-toast';
+import { Loader2, AlertTriangle } from 'lucide-react';
 import { 
   Zap, 
   Plus, 
@@ -16,118 +23,137 @@ import {
   BarChart3,
   CreditCard,
   Receipt,
-  AlertTriangle,
   RefreshCw,
   FileText,
   Wallet
 } from 'lucide-react';
 
 const BoostPage = () => {
-  const [activeTab, setActiveTab] = useState('pending');
-  const [boostPosts, setBoostPosts] = useState([
-    {
-      id: 1,
-      jobTitle: 'Senior React Developer',
-      company: 'TechCorp',
-      employerEmail: 'hr@techcorp.com',
-      boostType: 'Premium',
-      duration: '7 days',
-      price: 99,
-      status: 'Pending',
-      submittedDate: '2024-01-20',
-      paymentStatus: 'Paid',
-      paymentMethod: 'Credit Card',
-      transactionId: 'TXN_001234',
-      platformFee: 9.9,
-      netRevenue: 89.1,
-      jobDescription: 'Looking for an experienced React developer to join our growing team...',
-      companySize: '500-1000',
-      location: 'San Francisco, US'
-    },
-    {
-      id: 2,
-      jobTitle: 'UX Designer',
-      company: 'DesignHub',
-      employerEmail: 'jobs@designhub.com',
-      boostType: 'Standard',
-      duration: '3 days',
-      price: 49,
-      status: 'Pending',
-      submittedDate: '2024-01-21',
-      paymentStatus: 'Paid',
-      paymentMethod: 'PayPal',
-      transactionId: 'TXN_001235',
-      platformFee: 4.9,
-      netRevenue: 44.1,
-      jobDescription: 'Seeking a creative UX designer to enhance user experiences...',
-      companySize: '50-100',
-      location: 'London, UK'
-    },
-    {
-      id: 3,
-      jobTitle: 'Product Manager',
-      company: 'StartupXYZ',
-      employerEmail: 'hiring@startupxyz.com',
-      boostType: 'Basic',
-      duration: '1 day',
-      price: 19,
-      status: 'Active',
-      submittedDate: '2024-01-18',
-      approvedDate: '2024-01-18',
-      paymentStatus: 'Paid',
-      paymentMethod: 'Stripe',
-      transactionId: 'TXN_001236',
-      platformFee: 1.9,
-      netRevenue: 17.1,
-      views: 423,
-      applications: 18,
-      clickRate: '4.1%',
-      remainingDays: 0,
-      jobDescription: 'Join our dynamic team as a Product Manager...',
-      companySize: '10-50',
-      location: 'Berlin, Germany'
-    },
-    {
-      id: 4,
-      jobTitle: 'Data Scientist',
-      company: 'DataFlow',
-      employerEmail: 'recruit@dataflow.com',
-      boostType: 'Premium',
-      duration: '7 days',
-      price: 99,
-      status: 'Rejected',
-      submittedDate: '2024-01-19',
-      rejectedDate: '2024-01-19',
-      rejectionReason: 'Job description does not meet quality standards',
-      paymentStatus: 'Refunded',
-      paymentMethod: 'Credit Card',
-      transactionId: 'TXN_001237',
-      platformFee: 0,
-      netRevenue: 0,
-      jobDescription: 'Data scientist needed...',
-      companySize: '100-500',
-      location: 'Toronto, Canada'
-    }
-  ]);
-
-  const [financialData, setFinancialData] = useState({
-    totalRevenue: 2847,
-    monthlyRevenue: 1250,
-    pendingPayments: 148,
-    refundedAmount: 99,
-    platformFees: 284.7,
-    netProfit: 2562.3,
-    averageBoostPrice: 55.6,
-    conversionRate: 78.5
+  const [activeTab, setActiveTab] = useState('financial');
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState('');
+  const [filterStatus, setFilterStatus] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [limit] = useState(10);
+  
+  // Create boost form state
+  const [createBoostForm, setCreateBoostForm] = useState({
+    jobId: '',
+    employeeId: '',
+    boostPlanId: '',
+    paymentMethod: 'pending'
   });
+  const [availableBoostPlans, setAvailableBoostPlans] = useState([]);
+  const [availableJobs, setAvailableJobs] = useState([]);
+  const [availableEmployees, setAvailableEmployees] = useState([]);
+  
+  // Debounce search term to prevent excessive API calls
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearchTerm(searchTerm);
+    }, 500);
+    
+    return () => clearTimeout(timer);
+  }, [searchTerm]);
+
+  // State for boost data
+  const [boostPosts, setBoostPosts] = useState([]);
+  const [financialData, setFinancialData] = useState({
+    totalRevenue: 0,
+    monthlyRevenue: 0,
+    platformFees: 0,
+    netProfit: 0,
+    pendingPayments: 0,
+    refundedAmount: 0,
+    averageBoostPrice: 0,
+    conversionRate: 0
+  });
+
+  // Fetch data when component mounts or when search/filter/pagination changes
+  useEffect(() => {
+    fetchBoosts();
+  }, [currentPage, filterStatus, debouncedSearchTerm]);
+  
+  // Fetch jobs, employees, and boost plans when Create tab is activated
+  useEffect(() => {
+    if (activeTab === 'create') {
+      fetchJobsAndEmployees();
+      fetchBoostPlans();
+    }
+  }, [activeTab]);
+  
+  // Fetch financial analytics on component mount
+  useEffect(() => {
+    fetchFinancialAnalytics();
+  }, []);
+
+  // Fetch boosts from API
+  const fetchBoosts = async () => {
+    setLoading(true);
+    try {
+      const params = {
+        page: currentPage,
+        limit
+      };
+      
+      // Only add status and search if they have valid values
+      if (filterStatus && filterStatus !== 'all') {
+        params.status = filterStatus;
+      }
+      if (debouncedSearchTerm && debouncedSearchTerm.trim()) {
+        params.search = debouncedSearchTerm.trim();
+      }
+      
+      const response = await boostAPI.getAllBoosts(params);
+      
+      setBoostPosts(response.boosts);
+      setTotalPages(response.totalPages);
+      setError(null);
+    } catch (error) {
+      console.error('Error fetching boosts:', error);
+      setError(error.message || 'Failed to load boost data. Please try again.');
+      toast.error(error.message || 'Failed to load boost data');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Fetch financial analytics from API
+  const fetchFinancialAnalytics = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      
+      const response = await boostAPI.getFinancialAnalytics();
+      
+      setFinancialData({
+        totalRevenue: response.totalRevenue || 0,
+        monthlyRevenue: response.monthlyRevenue || 0,
+        platformFees: response.totalRevenue * 0.1 || 0, // Assuming 10% platform fee
+        netProfit: response.totalRevenue - (response.totalRevenue * 0.1) || 0,
+        pendingPayments: response.pendingBoosts * 50 || 0, // Rough estimate based on pending count
+        refundedAmount: response.refundedAmount || 0,
+        averageBoostPrice: response.averageBoostPrice || 0,
+        conversionRate: response.approvalRate || 0
+      });
+      
+      setLoading(false);
+    } catch (error) {
+      setError(error.message || 'Failed to fetch financial analytics');
+      setLoading(false);
+      toast.error(error.message || 'Failed to fetch financial analytics');
+    }
+  };
 
   const getStatusBadge = (status) => {
     const statusConfig = {
       'Active': 'bg-green-100 text-green-700',
       'Expired': 'bg-red-100 text-red-700',
       'Pending': 'bg-yellow-100 text-yellow-700',
-      'Rejected': 'bg-red-100 text-red-700',
-      'Approved': 'bg-green-100 text-green-700'
+      'Rejected': 'bg-red-100 text-red-700'
     };
     return statusConfig[status] || 'bg-gray-100 text-gray-700';
   };
@@ -151,47 +177,126 @@ const BoostPage = () => {
     return typeConfig[type] || 'bg-gray-100 text-gray-700';
   };
 
-  const handleApproveBoost = (boostId) => {
-    setBoostPosts(boostPosts.map(boost => 
-      boost.id === boostId 
-        ? { 
-            ...boost, 
-            status: 'Active',
-            approvedDate: new Date().toISOString().split('T')[0]
-          }
-        : boost
-    ));
+  const handleApproveBoost = async (boostId) => {
+    try {
+      setLoading(true);
+      await boostAPI.approveBoost(boostId);
+      toast.success('Boost approved successfully');
+      fetchBoosts(); // Refresh the list
+    } catch (error) {
+      toast.error(error.message || 'Failed to approve boost');
+      setLoading(false);
+    }
   };
 
-  const handleRejectBoost = (boostId, reason = '') => {
-    setBoostPosts(boostPosts.map(boost => 
-      boost.id === boostId 
-        ? { 
-            ...boost, 
-            status: 'Rejected',
-            rejectedDate: new Date().toISOString().split('T')[0],
-            rejectionReason: reason,
-            paymentStatus: 'Refunded'
-          }
-        : boost
-    ));
+  const handleRejectBoost = async (boostId, rejectionReason = 'Does not meet our requirements') => {
+    try {
+      setLoading(true);
+      await boostAPI.rejectBoost(boostId, rejectionReason);
+      toast.success('Boost rejected successfully');
+      fetchBoosts(); // Refresh the list
+    } catch (error) {
+      toast.error(error.message || 'Failed to reject boost');
+      setLoading(false);
+    }
   };
 
-  const handleRefund = (boostId) => {
-    setBoostPosts(boostPosts.map(boost => 
-      boost.id === boostId 
-        ? { 
-            ...boost, 
-            paymentStatus: 'Refunded',
-            netRevenue: 0,
-            platformFee: 0
-          }
-        : boost
-    ));
+  const handleRefund = async (boostId) => {
+    try {
+      setLoading(true);
+      await boostAPI.processRefund(boostId, 'Refund processed by admin');
+      toast.success('Refund processed successfully');
+      fetchBoosts(); // Refresh the list
+    } catch (error) {
+      toast.error(error.message || 'Failed to process refund');
+      setLoading(false);
+    }
+  };
+
+  // Fetch available jobs and employees for boost creation
+  const fetchJobsAndEmployees = async () => {
+    try {
+      const [jobsResponse, employeesResponse] = await Promise.all([
+        adminAPI.getJobs(),
+        adminAPI.getEmployees()
+      ]);
+      
+      if (jobsResponse.success) {
+        setAvailableJobs(jobsResponse.data || []);
+      }
+      
+      if (employeesResponse.success) {
+        setAvailableEmployees(employeesResponse.data || []);
+      }
+    } catch (error) {
+      console.error('Error fetching jobs and employees:', error);
+      toast.error('Failed to load jobs and employees');
+    }
+  };
+
+  // Fetch available boost plans for boost creation
+  const fetchBoostPlans = async () => {
+    try {
+      const response = await boostPlanAPI.getAllBoostPlans();
+      if (response.success) {
+        setAvailableBoostPlans(response.data || []);
+      }
+    } catch (error) {
+      console.error('Error fetching boost plans:', error);
+      toast.error('Failed to load boost plans');
+    }
+  };
+
+  // Handle create boost form submission
+  const handleCreateBoost = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    
+    try {
+      const response = await boostAPI.createBoost(createBoostForm);
+      if (response.success) {
+        toast.success('Boost created successfully!');
+        setActiveTab('all');
+        fetchBoosts();
+        // Reset form
+        setCreateBoostForm({
+          jobId: '',
+          employeeId: '',
+          boostPlanId: '',
+          paymentMethod: 'pending'
+        });
+      }
+    } catch (error) {
+      console.error('Error creating boost:', error);
+      toast.error(error.response?.data?.message || 'Failed to create boost');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Update form field
+  const updateCreateBoostForm = (field, value) => {
+    setCreateBoostForm(prev => ({
+      ...prev,
+      [field]: value
+    }));
   };
 
   // Financial Overview Component
   const renderFinancialOverview = () => (
+    loading ? (
+      <div className="flex justify-center items-center py-20">
+        <Loader2 className="w-10 h-10 text-indigo-500 animate-spin" />
+        <span className="ml-2 text-gray-600">Loading financial data...</span>
+      </div>
+    ) : error ? (
+      <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
+        <div className="flex">
+          <AlertTriangle className="h-5 w-5 mr-2" />
+          <span>{error}</span>
+        </div>
+      </div>
+    ) : (
     <div className="space-y-6">
       {/* Financial Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -199,7 +304,7 @@ const BoostPage = () => {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm text-gray-500 mb-1">Total Revenue</p>
-              <p className="text-2xl font-bold text-gray-900">${financialData.totalRevenue}</p>
+              <p className="text-2xl font-bold text-gray-900">${financialData.totalRevenue.toFixed(2)}</p>
               <p className="text-sm text-green-600 mt-1">+12% from last month</p>
             </div>
             <div className="w-12 h-12 bg-green-500 rounded-lg flex items-center justify-center">
@@ -212,7 +317,7 @@ const BoostPage = () => {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm text-gray-500 mb-1">Monthly Revenue</p>
-              <p className="text-2xl font-bold text-gray-900">${financialData.monthlyRevenue}</p>
+              <p className="text-2xl font-bold text-gray-900">${financialData.monthlyRevenue.toFixed(2)}</p>
               <p className="text-sm text-green-600 mt-1">+8% from last month</p>
             </div>
             <div className="w-12 h-12 bg-blue-500 rounded-lg flex items-center justify-center">
@@ -225,7 +330,7 @@ const BoostPage = () => {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm text-gray-500 mb-1">Platform Fees</p>
-              <p className="text-2xl font-bold text-gray-900">${financialData.platformFees}</p>
+              <p className="text-2xl font-bold text-gray-900">${financialData.platformFees.toFixed(2)}</p>
               <p className="text-sm text-gray-600 mt-1">10% commission</p>
             </div>
             <div className="w-12 h-12 bg-purple-500 rounded-lg flex items-center justify-center">
@@ -297,7 +402,7 @@ const BoostPage = () => {
               </div>
               <div className="flex justify-between">
                 <span className="text-gray-600">Average Boost Price</span>
-                <span className="font-semibold text-gray-900">${financialData.averageBoostPrice}</span>
+                <span className="font-semibold text-gray-900">${financialData.averageBoostPrice.toFixed(2)}</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-gray-600">Approval Rate</span>
@@ -308,10 +413,151 @@ const BoostPage = () => {
         </div>
       </div>
     </div>
+    )
+  );
+
+  // Create Boost Form Component
+  const renderCreateBoost = () => (
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <div>
+          <h3 className="text-xl font-semibold text-gray-900">Create New Boost</h3>
+          <p className="text-gray-600">Create a boost campaign for job listings</p>
+        </div>
+      </div>
+
+      <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-200">
+        <form onSubmit={handleCreateBoost} className="space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* Job Selection */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Select Job
+              </label>
+              <select
+                value={createBoostForm.jobId}
+                onChange={(e) => updateCreateBoostForm('jobId', e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                required
+              >
+                <option value="">Select a job...</option>
+                {availableJobs.map((job) => (
+                  <option key={job.id} value={job.id}>
+                    {job.title} - {job.employee?.companyName || 'Unknown Company'}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {/* Employee Selection */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Select Employee
+              </label>
+              <select
+                value={createBoostForm.employeeId}
+                onChange={(e) => updateCreateBoostForm('employeeId', e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                required
+              >
+                <option value="">Select an employee...</option>
+                {availableEmployees.map((employee) => (
+                  <option key={employee.id} value={employee.id}>
+                    {employee.firstName} {employee.lastName} - {employee.companyName}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {/* Boost Plan Selection */}
+            <div className="md:col-span-2">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Select Boost Plan
+              </label>
+              <select
+                value={createBoostForm.boostPlanId}
+                onChange={(e) => updateCreateBoostForm('boostPlanId', e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                required
+              >
+                <option value="">Select a boost plan...</option>
+                {availableBoostPlans.map((plan) => (
+                  <option key={plan.id} value={plan.id}>
+                    {plan.name} - ${plan.price} ({plan.duration} days)
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+
+          {/* Available Boost Plans Information */}
+          {availableBoostPlans.length > 0 && (
+            <div className="bg-gray-50 rounded-lg p-4">
+              <h4 className="font-medium text-gray-900 mb-2">Available Boost Plans</h4>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+                {availableBoostPlans.map((plan) => (
+                  <div key={plan.id} className="space-y-1">
+                    <div className="font-medium text-gray-700">{plan.name} (${plan.price})</div>
+                    <ul className="text-gray-600 space-y-1">
+                      <li>• Featured for {plan.duration} days</li>
+                      <li>• {plan.type} visibility boost</li>
+                      {plan.features && plan.features.map((feature, index) => (
+                        <li key={index}>• {feature}</li>
+                      ))}
+                    </ul>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Form Actions */}
+          <div className="flex justify-end space-x-4">
+            <button
+              type="button"
+              onClick={() => setActiveTab('all')}
+              className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              disabled={loading}
+              className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 disabled:opacity-50 flex items-center"
+            >
+              {loading ? (
+                <>
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  Creating...
+                </>
+              ) : (
+                <>
+                  <Plus className="w-4 h-4 mr-2" />
+                  Create Boost
+                </>
+              )}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
   );
 
   // Pending Boosts for Admin Approval
   const renderPendingBoosts = () => (
+    loading ? (
+      <div className="flex justify-center items-center py-20">
+        <Loader2 className="w-10 h-10 text-indigo-500 animate-spin" />
+        <span className="ml-2 text-gray-600">Loading pending boost requests...</span>
+      </div>
+    ) : error ? (
+      <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
+        <div className="flex">
+          <AlertTriangle className="h-5 w-5 mr-2" />
+          <span>{error}</span>
+        </div>
+      </div>
+    ) : (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
@@ -331,9 +577,9 @@ const BoostPage = () => {
               <div className="lg:col-span-2">
                 <div className="flex items-start justify-between mb-4">
                   <div>
-                    <h4 className="text-lg font-semibold text-gray-900">{boost.jobTitle}</h4>
-                    <p className="text-gray-600">{boost.company}</p>
-                    <p className="text-sm text-gray-500">{boost.employerEmail}</p>
+                    <h4 className="text-lg font-semibold text-gray-900">{boost.job?.title || 'N/A'}</h4>
+                    <p className="text-gray-600">{boost.employee?.companyName || 'N/A'}</p>
+                    <p className="text-sm text-gray-500">{boost.employee?.email || 'N/A'}</p>
                   </div>
                   <div className="flex space-x-2">
                     <span className={`px-2 py-1 rounded text-xs font-medium ${getBoostTypeBadge(boost.boostType)}`}>
@@ -347,25 +593,25 @@ const BoostPage = () => {
 
                 <div className="mb-4">
                   <p className="text-sm text-gray-600 mb-2">Job Description:</p>
-                  <p className="text-gray-800">{boost.jobDescription}</p>
+                  <p className="text-gray-800">{boost.job?.description || 'N/A'}</p>
                 </div>
 
                 <div className="grid grid-cols-2 gap-4 text-sm">
                   <div>
                     <span className="text-gray-500">Location:</span>
-                    <span className="ml-2 text-gray-900">{boost.location}</span>
+                    <span className="ml-2 text-gray-900">{boost.job?.location || 'N/A'}</span>
                   </div>
                   <div>
-                    <span className="text-gray-500">Company Size:</span>
-                    <span className="ml-2 text-gray-900">{boost.companySize}</span>
+                    <span className="text-gray-500">Job Type:</span>
+                    <span className="ml-2 text-gray-900">{boost.job?.type || 'N/A'}</span>
                   </div>
                   <div>
                     <span className="text-gray-500">Duration:</span>
-                    <span className="ml-2 text-gray-900">{boost.duration}</span>
+                    <span className="ml-2 text-gray-900">{boost.duration} days</span>
                   </div>
                   <div>
                     <span className="text-gray-500">Submitted:</span>
-                    <span className="ml-2 text-gray-900">{boost.submittedDate}</span>
+                    <span className="ml-2 text-gray-900">{new Date(boost.createdAt).toLocaleDateString()}</span>
                   </div>
                 </div>
               </div>
@@ -377,15 +623,15 @@ const BoostPage = () => {
                   <div className="space-y-2 text-sm">
                     <div className="flex justify-between">
                       <span className="text-gray-500">Price:</span>
-                      <span className="font-semibold text-gray-900">${boost.price}</span>
+                      <span className="font-semibold text-gray-900">${(Number(boost.price) || 0).toFixed(2)}</span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-gray-500">Platform Fee:</span>
-                      <span className="text-gray-900">${boost.platformFee}</span>
+                      <span className="text-gray-900">${(Number(boost.platformFee) || 0).toFixed(2)}</span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-gray-500">Net Revenue:</span>
-                      <span className="font-semibold text-green-600">${boost.netRevenue}</span>
+                      <span className="font-semibold text-green-600">${(Number(boost.netRevenue) || 0).toFixed(2)}</span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-gray-500">Payment:</span>
@@ -429,11 +675,32 @@ const BoostPage = () => {
           </div>
         ))}
       </div>
+      {boostPosts.filter(boost => boost.status === 'Pending').length === 0 && (
+        <div className="bg-gray-50 border border-gray-200 rounded-lg p-8 text-center">
+          <Zap className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+          <h3 className="text-lg font-medium text-gray-900 mb-2">No pending boost requests</h3>
+          <p className="text-gray-600">All boost requests have been processed. Check the "All Boosts" tab to see all boost campaigns.</p>
+        </div>
+      )}
     </div>
+    )
   );
 
   // All Boosts with Financial Data
   const renderAllBoosts = () => (
+    loading ? (
+      <div className="flex justify-center items-center py-20">
+        <Loader2 className="w-10 h-10 text-indigo-500 animate-spin" />
+        <span className="ml-2 text-gray-600">Loading boost campaigns...</span>
+      </div>
+    ) : error ? (
+      <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
+        <div className="flex">
+          <AlertTriangle className="h-5 w-5 mr-2" />
+          <span>{error}</span>
+        </div>
+      </div>
+    ) : (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
@@ -441,10 +708,26 @@ const BoostPage = () => {
           <p className="text-gray-600">Complete history with financial tracking</p>
         </div>
         <div className="flex space-x-3">
-          <button className="flex items-center px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50">
-            <Filter className="w-4 h-4 mr-2" />
-            Filter
-          </button>
+          <div className="relative">
+            <input
+              type="text"
+              placeholder="Search boosts..."
+              className="px-3 py-1 border rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+          </div>
+          <select
+            className="px-3 py-1 border rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            value={filterStatus}
+            onChange={(e) => setFilterStatus(e.target.value)}
+          >
+            <option value="all">All Status</option>
+            <option value="Pending">Pending</option>
+            <option value="Active">Active</option>
+            <option value="Rejected">Rejected</option>
+            <option value="Expired">Expired</option>
+          </select>
           <button className="flex items-center px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50">
             <Download className="w-4 h-4 mr-2" />
             Export
@@ -472,14 +755,14 @@ const BoostPage = () => {
                 <tr key={boost.id} className="hover:bg-gray-50">
                   <td className="px-6 py-4">
                     <div>
-                      <div className="font-medium text-gray-900">{boost.jobTitle}</div>
-                      <div className="text-sm text-gray-500">{boost.submittedDate}</div>
+                      <div className="font-medium text-gray-900">{boost.job?.title || 'N/A'}</div>
+                      <div className="text-sm text-gray-500">{new Date(boost.createdAt).toLocaleDateString()}</div>
                     </div>
                   </td>
                   <td className="px-6 py-4">
                     <div>
-                      <div className="text-sm text-gray-900">{boost.company}</div>
-                      <div className="text-xs text-gray-500">{boost.employerEmail}</div>
+                      <div className="text-sm text-gray-900">{boost.employee?.companyName || 'N/A'}</div>
+                      <div className="text-xs text-gray-500">{boost.employee?.email || 'N/A'}</div>
                     </div>
                   </td>
                   <td className="px-6 py-4">
@@ -494,7 +777,7 @@ const BoostPage = () => {
                   </td>
                   <td className="px-6 py-4">
                     <div>
-                      <div className="text-sm font-medium text-gray-900">${boost.price}</div>
+                      <div className="text-sm font-medium text-gray-900">${(Number(boost.price) || 0).toFixed(2)}</div>
                       <span className={`px-1 py-0.5 rounded text-xs font-medium ${getPaymentStatusBadge(boost.paymentStatus)}`}>
                         {boost.paymentStatus}
                       </span>
@@ -502,8 +785,8 @@ const BoostPage = () => {
                   </td>
                   <td className="px-6 py-4">
                     <div>
-                      <div className="text-sm font-medium text-green-600">${boost.netRevenue}</div>
-                      <div className="text-xs text-gray-500">Fee: ${boost.platformFee}</div>
+                      <div className="text-sm font-medium text-green-600">${(Number(boost.netRevenue) || 0).toFixed(2)}</div>
+                      <div className="text-xs text-gray-500">Fee: ${(Number(boost.platformFee) || 0).toFixed(2)}</div>
                     </div>
                   </td>
                   <td className="px-6 py-4">
@@ -552,11 +835,54 @@ const BoostPage = () => {
             </tbody>
           </table>
         </div>
+        
+        {/* Pagination Controls */}
+        {totalPages > 1 && (
+          <div className="flex justify-center mt-6 space-x-2">
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+              disabled={currentPage === 1}
+            >
+              Previous
+            </Button>
+            <div className="flex items-center space-x-1">
+              {[...Array(totalPages)].map((_, i) => (
+                <Button
+                  key={i}
+                  variant={currentPage === i + 1 ? "default" : "outline"}
+                  size="sm"
+                  className="w-8 h-8 p-0"
+                  onClick={() => setCurrentPage(i + 1)}
+                >
+                  {i + 1}
+                </Button>
+              ))}
+            </div>
+            <Button 
+              variant="outline" 
+              size="sm"
+              onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+              disabled={currentPage === totalPages}
+            >
+              Next
+            </Button>
+          </div>
+        )}
+        
+        {boostPosts.length === 0 && (
+          <div className="bg-gray-50 border border-gray-200 rounded-lg p-8 text-center mt-6">
+            <Zap className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+            <h3 className="text-lg font-medium text-gray-900 mb-2">No boost campaigns found</h3>
+            <p className="text-gray-600">There are no boost campaigns in the system yet.</p>
+          </div>
+        )}
       </div>
     </div>
-  );
+  ));
 
-  return (
+  return ( 
     <div className="space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
@@ -605,6 +931,16 @@ const BoostPage = () => {
           >
             All Boosts
           </button>
+          <button
+            onClick={() => setActiveTab('create')}
+            className={`py-2 px-1 border-b-2 font-medium text-sm ${
+              activeTab === 'create'
+                ? 'border-indigo-500 text-indigo-600'
+                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+            }`}
+          >
+            Create Boost
+          </button>
         </nav>
       </div>
 
@@ -612,6 +948,7 @@ const BoostPage = () => {
       {activeTab === 'financial' && renderFinancialOverview()}
       {activeTab === 'pending' && renderPendingBoosts()}
       {activeTab === 'all' && renderAllBoosts()}
+      {activeTab === 'create' && renderCreateBoost()}
     </div>
   );
 };

@@ -1,21 +1,40 @@
 import React from 'react';
 import { Shield, Bell, Globe, CreditCard, User, Lock, Eye, EyeOff } from 'lucide-react';
 
-const Settings = ({ settings, setSettings }) => {
+const Settings = ({ settings = {}, setSettings = () => {} }) => {
   const [showCurrentPassword, setShowCurrentPassword] = React.useState(false);
   const [showNewPassword, setShowNewPassword] = React.useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = React.useState(false);
 
+  const defaultSettings = {
+    email: '',
+    currentPassword: '',
+    newPassword: '',
+    confirmPassword: '',
+    emailNotifications: true,
+    pushNotifications: false,
+    smsNotifications: false,
+    profileVisibility: true,
+    dataSharing: false,
+    language: 'en',
+    timezone: 'UTC',
+    currency: 'USD',
+    dateFormat: 'MM/DD/YYYY',
+    ...settings
+  };
+
+  const currentSettings = { ...defaultSettings, ...settings };
+
   const handlePasswordChange = (e) => {
     e.preventDefault();
-    if (settings.newPassword !== settings.confirmPassword) {
+    if (currentSettings.newPassword !== currentSettings.confirmPassword) {
       alert('New passwords do not match');
       return;
     }
     // Handle password change logic here
     alert('Password updated successfully');
     setSettings({
-      ...settings,
+      ...currentSettings,
       currentPassword: '',
       newPassword: '',
       confirmPassword: ''
@@ -24,87 +43,87 @@ const Settings = ({ settings, setSettings }) => {
 
   const toggleSetting = (key) => {
     setSettings({
-      ...settings,
-      [key]: !settings[key]
+      ...currentSettings,
+      [key]: !currentSettings[key]
     });
   };
 
   const updateSetting = (key, value) => {
     setSettings({
-      ...settings,
+      ...currentSettings,
       [key]: value
     });
   };
 
   return (
     <div className="space-y-6">
-      <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Settings</h2>
+      <h2 className="text-2xl font-bold text-gray-900">Settings</h2>
 
       {/* Account Settings */}
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm">
-        <div className="p-6 border-b border-gray-200 dark:border-gray-700">
-          <div className="flex items-center space-x-3">
-            <User className="h-5 w-5 text-gray-600 dark:text-gray-400" />
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Account Settings</h3>
+      <div className="bg-white rounded-lg shadow-sm">
+        <div className="p-6 border-b border-gray-200">
+          <div className="flex items-center space-x-2">
+            <User className="h-5 w-5 text-gray-600" />
+            <h3 className="text-lg font-semibold text-gray-900">Account Settings</h3>
           </div>
         </div>
         <div className="p-6">
           <form onSubmit={handlePasswordChange} className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
                 Current Password
               </label>
               <div className="relative">
                 <input
                   type={showCurrentPassword ? 'text' : 'password'}
-                  value={settings.currentPassword}
+                  value={currentSettings.currentPassword}
                   onChange={(e) => updateSetting('currentPassword', e.target.value)}
-                  className="w-full px-3 py-2 pr-10 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                  className="w-full px-3 py-2 pr-10 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white text-gray-900"
                 />
                 <button
                   type="button"
                   onClick={() => setShowCurrentPassword(!showCurrentPassword)}
-                  className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+                  className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600"
                 >
                   {showCurrentPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                 </button>
               </div>
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
                 New Password
               </label>
               <div className="relative">
                 <input
                   type={showNewPassword ? 'text' : 'password'}
-                  value={settings.newPassword}
+                  value={currentSettings.newPassword}
                   onChange={(e) => updateSetting('newPassword', e.target.value)}
-                  className="w-full px-3 py-2 pr-10 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                  className="w-full px-3 py-2 pr-10 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white text-gray-900"
                 />
                 <button
                   type="button"
                   onClick={() => setShowNewPassword(!showNewPassword)}
-                  className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+                  className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600"
                 >
                   {showNewPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                 </button>
               </div>
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
                 Confirm New Password
               </label>
               <div className="relative">
                 <input
                   type={showConfirmPassword ? 'text' : 'password'}
-                  value={settings.confirmPassword}
+                  value={currentSettings.confirmPassword}
                   onChange={(e) => updateSetting('confirmPassword', e.target.value)}
-                  className="w-full px-3 py-2 pr-10 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                  className="w-full px-3 py-2 pr-10 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white text-gray-900"
                 />
                 <button
                   type="button"
                   onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                  className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+                  className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600"
                 >
                   {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                 </button>
@@ -121,11 +140,11 @@ const Settings = ({ settings, setSettings }) => {
       </div>
 
       {/* Notification Settings */}
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm">
-        <div className="p-6 border-b border-gray-200 dark:border-gray-700">
-          <div className="flex items-center space-x-3">
-            <Bell className="h-5 w-5 text-gray-600 dark:text-gray-400" />
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Notification Preferences</h3>
+      <div className="bg-white rounded-lg shadow-sm">
+        <div className="p-6 border-b border-gray-200">
+          <div className="flex items-center space-x-2">
+            <Bell className="h-5 w-5 text-gray-600" />
+            <h3 className="text-lg font-semibold text-gray-900">Notification Preferences</h3>
           </div>
         </div>
         <div className="p-6 space-y-4">
@@ -138,18 +157,18 @@ const Settings = ({ settings, setSettings }) => {
           ].map((item) => (
             <div key={item.key} className="flex items-center justify-between">
               <div>
-                <p className="font-medium text-gray-900 dark:text-white">{item.label}</p>
-                <p className="text-sm text-gray-500 dark:text-gray-400">{item.description}</p>
+                <p className="font-medium text-gray-900">{item.label}</p>
+              <p className="text-sm text-gray-500">{item.description}</p>
               </div>
               <button
                 onClick={() => toggleSetting(item.key)}
                 className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                  settings[item.key] ? 'bg-blue-600' : 'bg-gray-200 dark:bg-gray-600'
+                  currentSettings[item.key] ? 'bg-blue-600' : 'bg-gray-200'
                 }`}
               >
                 <span
                   className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                    settings[item.key] ? 'translate-x-6' : 'translate-x-1'
+                    currentSettings[item.key] ? 'translate-x-6' : 'translate-x-1'
                   }`}
                 />
               </button>
@@ -159,11 +178,11 @@ const Settings = ({ settings, setSettings }) => {
       </div>
 
       {/* Privacy Settings */}
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm">
-        <div className="p-6 border-b border-gray-200 dark:border-gray-700">
-          <div className="flex items-center space-x-3">
-            <Shield className="h-5 w-5 text-gray-600 dark:text-gray-400" />
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Privacy Settings</h3>
+      <div className="bg-white rounded-lg shadow-sm">
+        <div className="p-6 border-b border-gray-200">
+          <div className="flex items-center space-x-2">
+            <Shield className="h-5 w-5 text-gray-600" />
+            <h3 className="text-lg font-semibold text-gray-900">Privacy Settings</h3>
           </div>
         </div>
         <div className="p-6 space-y-4">
@@ -174,18 +193,18 @@ const Settings = ({ settings, setSettings }) => {
           ].map((item) => (
             <div key={item.key} className="flex items-center justify-between">
               <div>
-                <p className="font-medium text-gray-900 dark:text-white">{item.label}</p>
-                <p className="text-sm text-gray-500 dark:text-gray-400">{item.description}</p>
+                <p className="font-medium text-gray-900">{item.label}</p>
+              <p className="text-sm text-gray-500">{item.description}</p>
               </div>
               <button
                 onClick={() => toggleSetting(item.key)}
                 className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                  settings[item.key] ? 'bg-blue-600' : 'bg-gray-200 dark:bg-gray-600'
+                  currentSettings[item.key] ? 'bg-blue-600' : 'bg-gray-200'
                 }`}
               >
                 <span
                   className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                    settings[item.key] ? 'translate-x-6' : 'translate-x-1'
+                    currentSettings[item.key] ? 'translate-x-6' : 'translate-x-1'
                   }`}
                 />
               </button>
@@ -195,23 +214,23 @@ const Settings = ({ settings, setSettings }) => {
       </div>
 
       {/* User Preferences */}
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm">
-        <div className="p-6 border-b border-gray-200 dark:border-gray-700">
-          <div className="flex items-center space-x-3">
-            <Globe className="h-5 w-5 text-gray-600 dark:text-gray-400" />
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">User Preferences</h3>
+      <div className="bg-white rounded-lg shadow-sm">
+        <div className="p-6 border-b border-gray-200">
+          <div className="flex items-center space-x-2">
+            <Globe className="h-5 w-5 text-gray-600" />
+            <h3 className="text-lg font-semibold text-gray-900">User Preferences</h3>
           </div>
         </div>
         <div className="p-6 space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                Language
-              </label>
-              <select
-                value={settings.language}
-                onChange={(e) => updateSetting('language', e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+              Language
+            </label>
+            <select
+              value={currentSettings.language}
+              onChange={(e) => updateSetting('language', e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white text-gray-900"
               >
                 <option value="en">English</option>
                 <option value="hi">Hindi</option>
@@ -222,13 +241,13 @@ const Settings = ({ settings, setSettings }) => {
               </select>
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                Timezone
-              </label>
-              <select
-                value={settings.timezone}
-                onChange={(e) => updateSetting('timezone', e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+              Timezone
+            </label>
+            <select
+              value={currentSettings.timezone}
+              onChange={(e) => updateSetting('timezone', e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white text-gray-900"
               >
                 <option value="Asia/Kolkata">India Standard Time (IST)</option>
                 <option value="UTC">UTC</option>
@@ -238,13 +257,13 @@ const Settings = ({ settings, setSettings }) => {
               </select>
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                Currency
-              </label>
-              <select
-                value={settings.currency}
-                onChange={(e) => updateSetting('currency', e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+              Currency
+            </label>
+            <select
+              value={currentSettings.currency}
+              onChange={(e) => updateSetting('currency', e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white text-gray-900"
               >
                 <option value="INR">Indian Rupee (₹)</option>
                 <option value="USD">US Dollar ($)</option>
@@ -253,13 +272,13 @@ const Settings = ({ settings, setSettings }) => {
               </select>
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                Date Format
-              </label>
-              <select
-                value={settings.dateFormat}
-                onChange={(e) => updateSetting('dateFormat', e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+              Date Format
+            </label>
+            <select
+              value={currentSettings.dateFormat}
+              onChange={(e) => updateSetting('dateFormat', e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white text-gray-900"
               >
                 <option value="DD/MM/YYYY">DD/MM/YYYY</option>
                 <option value="MM/DD/YYYY">MM/DD/YYYY</option>
@@ -267,53 +286,36 @@ const Settings = ({ settings, setSettings }) => {
               </select>
             </div>
           </div>
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="font-medium text-gray-900 dark:text-white">Dark Mode</p>
-              <p className="text-sm text-gray-500 dark:text-gray-400">Switch between light and dark themes</p>
-            </div>
-            <button
-              onClick={() => toggleSetting('darkMode')}
-              className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                settings.darkMode ? 'bg-blue-600' : 'bg-gray-200 dark:bg-gray-600'
-              }`}
-            >
-              <span
-                className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                  settings.darkMode ? 'translate-x-6' : 'translate-x-1'
-                }`}
-              />
-            </button>
-          </div>
+
         </div>
       </div>
 
       {/* Billing & Subscription */}
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm">
-        <div className="p-6 border-b border-gray-200 dark:border-gray-700">
-          <div className="flex items-center space-x-3">
-            <CreditCard className="h-5 w-5 text-gray-600 dark:text-gray-400" />
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Billing & Subscription</h3>
+      <div className="bg-white rounded-lg shadow-sm">
+        <div className="p-6 border-b border-gray-200">
+          <div className="flex items-center space-x-2">
+            <CreditCard className="h-5 w-5 text-gray-600" />
+            <h3 className="text-lg font-semibold text-gray-900">Billing & Subscription</h3>
           </div>
         </div>
         <div className="p-6 space-y-4">
-          <div className="flex items-center justify-between p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
-            <div>
-              <p className="font-medium text-blue-900 dark:text-blue-100">Current Plan: Professional</p>
-              <p className="text-sm text-blue-700 dark:text-blue-300">₹2,999/month • Unlimited job postings</p>
+          <div className="flex items-center justify-between p-4 bg-blue-50 rounded-lg">
+          <div>
+            <p className="font-medium text-blue-900">Current Plan: Professional</p>
+            <p className="text-sm text-blue-700">₹2,999/month • Unlimited job postings</p>
             </div>
             <button className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors">
               Upgrade Plan
             </button>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <button className="p-4 border border-gray-200 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors text-left">
-              <p className="font-medium text-gray-900 dark:text-white">Billing History</p>
-              <p className="text-sm text-gray-500 dark:text-gray-400">View past invoices and payments</p>
-            </button>
-            <button className="p-4 border border-gray-200 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors text-left">
-              <p className="font-medium text-gray-900 dark:text-white">Payment Methods</p>
-              <p className="text-sm text-gray-500 dark:text-gray-400">Manage your payment methods</p>
+            <button className="p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors text-left">
+            <p className="font-medium text-gray-900">Billing History</p>
+            <p className="text-sm text-gray-500">View past invoices and payments</p>
+          </button>
+          <button className="p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors text-left">
+            <p className="font-medium text-gray-900">Payment Methods</p>
+            <p className="text-sm text-gray-500">Manage your payment methods</p>
             </button>
           </div>
         </div>

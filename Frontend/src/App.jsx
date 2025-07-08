@@ -1,171 +1,139 @@
-<<<<<<< HEAD
-import EmployeeDashboard from "./pages/Employee/Dashboard";
-import EmployeeApplication from "./pages/Employee/Applications";
-import EmployeeProfile from "./pages/Employee/EmployeeProfile";
-import EmployeeJobs from "./pages/Employee/jobs";
-import EmployeePostjobs from "./pages/Employee/Postjob";
-import EmployeeSettings from "./pages/Employee/Setting";
-import Home from "./pages/Homepage";
-import { BrowserRouter, Routes, Route } from "react-router-dom"
-import EmployeeLayout from "./components/employee/Layout";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { AuthProvider } from "./context/AuthContext";
+import { ToastProvider } from "./context/ToastContext";
+import { Toaster } from 'react-hot-toast';
+import ProtectedRoute from "./components/ProtectedRoute";
 
-import { useState } from "react";
+import Home from "./pages/Homepage";
+import Login from "./pages/auth/Login";
+import AdminLogin from "./pages/auth/AdminLogin";
+import EmployeeLogin from "./pages/auth/EmployeeLogin";
+import Register from "./pages/auth/Register";
+import ForgetPassword from "./pages/auth/Forgetpassword";
+
+import AdminLayout from "./components/admin/Layout";
+import EmployeeLayout from "./components/employee/Layout";
+import UserLayout from "./components/user/Layout";
+
+import AdminDashboard from "./pages/admin/AdminDashboard";
+import AdminUsers from "./pages/admin/Users";
+import AdminJobs from "./pages/admin/JobsManagement";
+import AdminCompanies from "./pages/admin/Companies";
+import AdminBoost from "./pages/admin/BoostPage";
+import AdminAnalytics from "./pages/admin/Analytics";
+import AdminSettings from "./pages/admin/Settings";
+
+import EmployeeDashboard from "./pages/Employee/Dashboard";
+import EmployeeApplications from "./pages/Employee/Applications";
+import EmployeeProfile from "./pages/Employee/EmployeeProfile";
+import EmployeeJobs from "./pages/Employee/Jobs";
+import EmployeeEditJob from "./pages/Employee/EditJob";
+import EmployeePostJob from "./pages/Employee/Postjob";
+import EmployeeNotifications from "./pages/Employee/Notifications";
+import EmployeeSettings from "./pages/Employee/Setting";
+
+import UserDashboard from "./pages/user/Dashboard";
+import UserJobSearch from "./pages/user/Jobsearch";
+import UserApplications from "./pages/user/Applications";
+import UserSavedJobs from "./pages/user/SavedJobs";
+import UserNotifications from "./pages/user/Notifications";
+import UserProfile from "./pages/user/Profile";
+import UserSettings from "./pages/user/Settings";
 
 function App() {
-  const [jobs, setJobs] = useState([
-    {
-      id: '1',
-      title: 'Senior React Developer',
-      company: 'TechCorp Solutions',
-      location: 'Mumbai, India',
-      type: 'Full-time',
-      salary: '₹15-25 LPA',
-      description: 'We are looking for a Senior React Developer to join our dynamic team.',
-      requirements: ['5+ years React experience', 'TypeScript', 'Node.js', 'Team leadership'],
-      postedDate: '2024-01-15',
-      applications: 24,
-      status: 'Active'
-    },
-    {
-      id: '2',
-      title: 'UI/UX Designer',
-      company: 'TechCorp Solutions',
-      location: 'Bangalore, India',
-      type: 'Full-time',
-      salary: '₹8-15 LPA',
-      description: 'Creative UI/UX Designer needed for innovative projects.',
-      requirements: ['Figma/Adobe XD', 'User Research', 'Prototyping', '3+ years experience'],
-      postedDate: '2024-01-10',
-      applications: 18,
-      status: 'Active'
-    }
-  ]);
-
-  const [applications, setApplications] = useState([
-    {
-      id: '1',
-      jobId: '1',
-      jobTitle: 'Senior React Developer',
-      candidateName: 'Arjun Sharma',
-      candidateEmail: 'arjun.sharma@email.com',
-      candidatePhone: '+91 9876543210',
-      experience: '6 years',
-      appliedDate: '2024-01-18',
-      status: 'Pending',
-      resume: 'arjun_sharma_resume.pdf'
-    },
-    {
-      id: '2',
-      jobId: '1',
-      jobTitle: 'Senior React Developer',
-      candidateName: 'Priya Patel',
-      candidateEmail: 'priya.patel@email.com',
-      candidatePhone: '+91 9876543211',
-      experience: '7 years',
-      appliedDate: '2024-01-17',
-      status: 'Reviewed',
-      resume: 'priya_patel_resume.pdf'
-    },
-    {
-      id: '3',
-      jobId: '2',
-      jobTitle: 'UI/UX Designer',
-      candidateName: 'Rahul Kumar',
-      candidateEmail: 'rahul.kumar@email.com',
-      candidatePhone: '+91 9876543212',
-      experience: '4 years',
-      appliedDate: '2024-01-16',
-      status: 'Accepted',
-      resume: 'rahul_kumar_resume.pdf'
-    }
-  ]);
-
-  const [newJob, setNewJob] = useState({
-    title: '',
-    location: '',
-    type: 'Full-time',
-    salary: '',
-    description: '',
-    requirements: ''
-  });
-
-  const [companyProfile, setCompanyProfile] = useState({
-    name: 'TechCorp Solutions',
-    email: 'hr@techcorp.com',
-    phone: '+91 9876543210',
-    location: 'Mumbai, India',
-    website: 'www.techcorp.com',
-    description: 'Leading technology solutions provider focused on innovation and excellence.',
-    founded: '2015',
-    employees: '500-1000'
-  });
-
-  const [settings, setSettings] = useState({
-    currentPassword: '',
-    newPassword: '',
-    confirmPassword: '',
-    emailNotifications: true,
-    pushNotifications: true,
-    applicationAlerts: true,
-    weeklyReports: false,
-    marketingEmails: false,
-    profileVisible: true,
-    showCompanyInfo: true,
-    allowDirectMessages: true,
-    language: 'en',
-    timezone: 'Asia/Kolkata',
-    currency: 'INR',
-    dateFormat: 'DD/MM/YYYY',
-    darkMode: false
-  });
-
-  const [activeTab, setActiveTab] = useState('dashboard');
-  const [sidebarOpen, setSidebarOpen] = useState(false);
-
-  const handleJobSubmit = (e) => {
-    e.preventDefault();
-    const job = {
-      id: (jobs.length + 1).toString(),
-      title: newJob.title,
-      company: companyProfile.name,
-      location: newJob.location,
-      type: newJob.type,
-      salary: newJob.salary,
-      description: newJob.description,
-      requirements: newJob.requirements.split(',').map(req => req.trim()),
-      postedDate: new Date().toISOString().split('T')[0],
-      applications: 0,
-      status: 'Active'
-    };
-    setJobs([...jobs, job]);
-    setNewJob({ title: '', location: '', type: 'Full-time', salary: '', description: '', requirements: '' });
-    setActiveTab('jobs');
-  };
 
 
   return (
-    <>
-      <BrowserRouter>
+    <ToastProvider>
+      <AuthProvider>
+        <BrowserRouter>
+        <Toaster
+          position="top-right"
+          toastOptions={{
+            duration: 4000,
+            style: {
+              background: '#363636',
+              color: '#fff',
+            },
+            success: {
+              duration: 3000,
+              iconTheme: {
+                primary: '#4ade80',
+                secondary: '#fff',
+              },
+            },
+            error: {
+              duration: 4000,
+              iconTheme: {
+                primary: '#ef4444',
+                secondary: '#fff',
+              },
+            },
+          }}
+        />
         <Routes>
+          {/* Public Routes */}
           <Route path="/" element={<Home />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/admin/login" element={<AdminLogin />} />
+          <Route path="/employee/login" element={<EmployeeLogin />} />
+          <Route path="/register" element={<Register />} />
+          <Route path="/forgetpassword" element={<ForgetPassword />} />
 
+          {/* Admin Routes */}
+          <Route path="/admin" element={
+            <ProtectedRoute requiredRole="admin">
+              <AdminLayout />
+            </ProtectedRoute>
+          }>
+            <Route index element={<Navigate to="/admin/dashboard" replace />} />
+            <Route path="dashboard" element={<AdminDashboard />} />
+            <Route path="users" element={<AdminUsers />} />
+            <Route path="jobs" element={<AdminJobs />} />
+            <Route path="companies" element={<AdminCompanies />} />
+            <Route path="boost" element={<AdminBoost />} />
+            <Route path="analytics" element={<AdminAnalytics />} />
+            <Route path="settings" element={<AdminSettings />} />
+          </Route>
 
-          <Route path="/employee" element={<EmployeeLayout applications={applications} settings={settings} companyProfile={companyProfile} />}>
-            <Route path="dashboard" element={<EmployeeDashboard jobs={jobs} applications={applications} setActiveTab={activeTab} />} />
-            <Route path="applications" element={<EmployeeApplication applications={applications} jobs={jobs} />} />
+          {/* Employee Routes */}
+          <Route path="/employee" element={
+            <ProtectedRoute requiredRole="employee">
+              <EmployeeLayout />
+            </ProtectedRoute>
+          }>
+            <Route index element={<Navigate to="/employee/dashboard" replace />} />
+            <Route path="dashboard" element={<EmployeeDashboard />} />
+            <Route path="applications" element={<EmployeeApplications />} />
+            <Route path="profile" element={<EmployeeProfile />} />
+            <Route path="jobs" element={<EmployeeJobs />} />
+            <Route path="jobs/edit/:id" element={<EmployeeEditJob />} />
+            <Route path="postjob" element={<EmployeePostJob />} />
+            <Route path="notifications" element={<EmployeeNotifications />} />
+            <Route path="setting" element={<EmployeeSettings />} />
+          </Route>
 
-            <Route path="profile" element={<EmployeeProfile companyProfile={companyProfile} setCompanyProfile={setCompanyProfile} />} />
-
-            <Route path="jobs" element={<EmployeeJobs jobs={jobs} setActiveTab={setActiveTab} />} />
-
-            <Route path="postjob" element={<EmployeePostjobs newJob={newJob} setNewJob={setNewJob} setActiveTab={setActiveTab} handleJobSubmit={handleJobSubmit} />} />
-
-            <Route path="setting" element={<EmployeeSettings settings={settings} setSettings={setSettings} />} />
-
+          {/* User/Job Seeker Routes */}
+          <Route path="/user" element={
+            <ProtectedRoute requiredRole="jobseeker">
+              <UserLayout />
+            </ProtectedRoute>
+          }>
+            <Route index element={<Navigate to="/user/dashboard" replace />} />
+            <Route path="dashboard" element={<UserDashboard />} />
+            <Route path="jobsearch" element={<UserJobSearch />} />
+            <Route path="applications" element={<UserApplications />} />
+            <Route path="saved-jobs" element={<UserSavedJobs />} />
+            <Route path="notifications" element={<UserNotifications />} />
+            <Route path="profile" element={<UserProfile />} />
+            <Route path="settings" element={<UserSettings />} />
           </Route>
 
         </Routes>
-      </BrowserRouter>
-
-    </>)
+        </BrowserRouter>
+      </AuthProvider>
+    </ToastProvider>
+  );
 }
+
+export default App
